@@ -3,23 +3,12 @@
 
 #include "Globals.h"
 #include "StorageManager.h"
+#include "Matrix.h"
 
-const byte moveInterval = 100;
+const short moveInterval = 500;
 unsigned long long lastMoved = 0;
 
-bool matrixChanged = true;
-
-byte matrix[][MATRIX_SIZE] = {
-  { 0, 0, 0, 0, 0, 0, 0, 0 },
-  { 0, 0, 0, 0, 0, 0, 0, 0 },
-  { 0, 0, 0, 0, 0, 0, 0, 0 },
-  { 0, 0, 0, 0, 0, 0, 0, 0 },
-  { 0, 0, 0, 0, 0, 0, 0, 0 },
-  { 0, 0, 0, 0, 0, 0, 0, 0 },
-  { 0, 0, 0, 0, 0, 0, 0, 0 },
-  { 0, 0, 0, 0, 0, 0, 0, 0 }
-};
-
+bool sJoyMoved = false;
 byte xPos = 0;
 byte yPos = 0;
 byte xLastPos = 0;
@@ -28,90 +17,73 @@ byte yLastPos = 0;
 byte foodPosX;
 byte foodPosY;
 
-short foodEated;
+short foodEated, snakeXDirection, snakeYDirection;
 
 void updateMatrix();
 
 void gameSetup() {
+  xPos = 0;
+  yPos = 0;
   matrix[xPos][yPos] = 1;
   foodPosX = rand() % 8;
   foodPosY = rand() % 8;
   matrix[foodPosX][foodPosY] = 1;
   foodEated = 0;
   updateMatrix();
-}
-
-void updateMatrix() {
-  // TODO: update matrix using byte matrix (refresh function)
-  for (int i = 0; i < MATRIX_SIZE; i++) {
-    for (int j = 0; j < MATRIX_SIZE; j++) {
-      lc.setLed(0, i, j, matrix[i][j]);
-    }
-  }
+  lastMoved = 0;
+  snakeXDirection = RIGHT;
+  snakeYDirection = STILL;
+  snakeXDirection = RIGHT;
+  snakeYDirection = STILL;
 }
 
 
 void generateFood() {
-  byte lastFoodPosX = foodPosX;
-  byte lastFoodPosY = foodPosY;
   foodPosX = rand() % 8;
   foodPosY = rand() % 8;
-  // matrix[lastFoodPosX][lastFoodPosY] = 0;
   matrix[foodPosX][foodPosY] = 1;
-  updateMatrix();
+  matrixChanged = true;
 }
 
 
-void updatePositions() {
-  // TODO: joystick control
+void getSnakeDirection() {
   int xValue = analogRead(pinY);
   int yValue = analogRead(pinX);
 
+  if (stillMinThreshold <= xValue && xValue <= stillMaxThreshold && stillMinThreshold <= yValue && yValue <= stillMaxThreshold) {
+    sJoyMoved = false;
+  }
+
+  if (xValue > maxThreshold && sJoyMoved == false && snakeXDirection == STILL) {
+    snakeXDirection = RIGHT;
+    snakeYDirection = STILL;
+    sJoyMoved = true;
+  } else if (xValue < minThreshold && sJoyMoved == false && snakeXDirection == STILL) {
+    snakeXDirection = LEFT;
+    snakeYDirection = STILL;
+    sJoyMoved = true;
+  }
+
+  if (yValue > maxThreshold && sJoyMoved == false && snakeYDirection == STILL) {
+    snakeXDirection = STILL;
+    snakeYDirection = UP;
+    sJoyMoved = true;
+  } else if (yValue < minThreshold && sJoyMoved == false && snakeYDirection == STILL) {
+    snakeXDirection = STILL;
+    snakeYDirection = DOWN;
+    sJoyMoved = true;
+  }
+}
+
+void moveSnake() {
   xLastPos = xPos;
   yLastPos = yPos;
-  if (xValue > minThreshold) {
-    if (xPos < MATRIX_SIZE - 1) {
-      xPos++;
-    } 
-    else {
-      xPos = 0;
-    }
-  }
-
-  if (xValue < maxThreshold) {
-    if (xPos > 0) {
-      xPos--;
-    }
-    else {
-      xPos = MATRIX_SIZE - 1;
-    }
-  }
-
-
-  if (yValue > maxThreshold) {
-    if (yPos < MATRIX_SIZE - 1) {
-      yPos++;
-    } 
-    else {
-      yPos = 0;
-    }
-  }
-
-  if (yValue < minThreshold) {
-    if (yPos > 0) {
-      yPos--;
-    }
-    else {
-      yPos = MATRIX_SIZE - 1;
-    }
-  }
-
-  if (xLastPos != xPos || yLastPos != yPos) {
-    matrix[xLastPos][yLastPos] = 0;
-    matrix[xPos][yPos] = 1;
-    matrixChanged = true;
-    lastMoved = millis();
-  }
+  xPos += snakeXDirection;
+  yPos += snakeYDirection;
+  matrix[xLastPos][yLastPos] = 0;
+  matrix[xPos][yPos] = 1;
+  matrixChanged = true;
+  lastMoved = millis();
 }
 
 void updateHighscore() {
@@ -134,22 +106,20 @@ void gameEnded() {
     }
   }
   updateHighscore();
-  foodPosX = 0;
-  foodPosY = 0;
-  foodEated = 0;
 }
 
 void gameLoop(bool &updateLCD) {
-  // TODO: update positions in an interval
 
   if (millis() - lastMoved > moveInterval) {
-    updatePositions();  // calculare stare
+    moveSnake();
   }
 
   if (matrixChanged == true) {
     updateMatrix();
     matrixChanged = false;
   }
+
+  getSnakeDirection();
 
   if (xPos == foodPosX && yPos == foodPosY) {
     generateFood();
@@ -158,7 +128,6 @@ void gameLoop(bool &updateLCD) {
   }
   
 }
-// theoretical example
 
 short getPoints() {
   return foodEated;

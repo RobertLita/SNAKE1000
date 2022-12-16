@@ -16,7 +16,7 @@ byte buttonState = LOW;
 
 String menuItems[] = { "SNAKE1000", "Start Game", "Highscores", "Settings", "About", "How to play" };
 String settingsItems[] = { "SETTINGS", "Your name", "Difficulty", "Contrast", "Brightness", "Matrix Light", "Sounds", "Reset HScores", "Back to Menu" };
-String aboutItems[] = { "ABOUT", "Nume Joc", "Author:", "Lita Robert", "Github user:", "RobertLita", "Back to Menu" };
+String aboutItems[] = { "ABOUT", "SNAKE1000", "Author:", "Lita Robert", "Github user:", "RobertLita", "Back to Menu" };
 String htpItems[] = { "HOW TO PLAY", "1. Eat food", "2. Be fast", "3. Have fun", "Back to Menu" };
 String hsItems[] = { "HIGHSCORES", "1.", "2.", "3.", "4.", "5.", "Back to Menu" };
 
@@ -222,16 +222,6 @@ void displaySounds() {
 }
 
 
-void resetHighscores() {
-  for (byte i = 0; i < 5; i++) {
-    strcpy(highscores[i].name, "NoName");
-    highscores[i].score = 0;
-  }
-  saveHighscoresInStorage();
-  goToState(currentMenuState, 5);
-}
-
-
 void buildHighscores() {
   for (byte i = 1; i <= 5; i++) {
     short sscore = highscores[i - 1].score;
@@ -251,6 +241,17 @@ void buildHighscores() {
     id += '.';
     hsItems[i] = id + highscores[i - 1].name + score;
   }
+}
+
+
+void resetHighscores() {
+  for (byte i = 0; i < 5; i++) {
+    strcpy(highscores[i].name, "NoName");
+    highscores[i].score = 0;
+  }
+  saveHighscoresInStorage();
+  buildHighscores();
+  goToState(currentMenuState, 5);
 }
 
 

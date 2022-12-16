@@ -6,6 +6,18 @@
 #include "Globals.h"
 
 LedControl lc = LedControl(dinPin, clockPin, loadPin, 1);
+bool matrixChanged = true;
+
+byte matrix[][MATRIX_SIZE] = {
+  { 0, 0, 0, 0, 0, 0, 0, 0 },
+  { 0, 0, 0, 0, 0, 0, 0, 0 },
+  { 0, 0, 0, 0, 0, 0, 0, 0 },
+  { 0, 0, 0, 0, 0, 0, 0, 0 },
+  { 0, 0, 0, 0, 0, 0, 0, 0 },
+  { 0, 0, 0, 0, 0, 0, 0, 0 },
+  { 0, 0, 0, 0, 0, 0, 0, 0 },
+  { 0, 0, 0, 0, 0, 0, 0, 0 }
+};
 
 void matrixSetup() {
   lc.shutdown(0, false);
@@ -14,6 +26,15 @@ void matrixSetup() {
 
 void setMatrixBrightness(byte value) {
   lc.setIntensity(0, value);
+}
+
+
+void updateMatrix() {
+  for (int i = 0; i < MATRIX_SIZE; i++) {
+    for (int j = 0; j < MATRIX_SIZE; j++) {
+      lc.setLed(0, i, j, matrix[i][j]);
+    }
+  }
 }
 
 void displayIconOnMatrix(const byte icon[]) {
