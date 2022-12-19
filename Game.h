@@ -12,20 +12,21 @@ struct position {
 
 position snake[MATRIX_SIZE * MATRIX_SIZE];
 
-short moveInterval = 500;
-unsigned long long lastMoved = 0;
+unsigned long long lastMoved, foodBlinkTimestamp;
 
-bool sJoyMoved = false;
-byte snakeX, snakeY = 0;
+bool sJoyMoved = false, foodDot;
+byte snakeX, snakeY ;
 
 byte foodPosX, foodPosY;
 
-short snakeXDirection, snakeYDirection, snakeLength;
+short snakeXDirection, snakeYDirection, snakeLength, moveInterval;;
 
-void updateMatrix();
+void updateMatrix(byte foodX, byte foodY);
 void generateFood();
 
 void gameSetup() {
+  clearMatrixLeds();
+  moveInterval = 500;
   snakeX = 0;
   snakeY = 2;  
   snakeLength = 3;
@@ -36,12 +37,13 @@ void gameSetup() {
     matrix[snake[i].x][snake[i].y] = 1; 
 
   generateFood();
-  updateMatrix();
+  updateMatrix(foodPosX, foodPosY);
   matrixChanged = false;
 
   lastMoved = 0;
   snakeXDirection = STILL;
   snakeYDirection = RIGHT;
+  foodDot = true;
 }
 
 
@@ -57,9 +59,31 @@ void generateFood() {
       }
     else invalidPosition = false;
   }
-  
-  matrix[foodPosX][foodPosY] = 1;
-  matrixChanged = true;
+
+}
+
+
+void blinkFood () {
+  unsigned long timePassed = millis() - foodBlinkTimestamp;
+  if (timePassed > FOOD_BLINK) {
+    foodDot = !foodDot;
+    foodBlinkTimestamp = millis();
+  }
+
+  if (foodDot) {
+    activatePointOnMatrix(foodPosX, foodPosY);
+  } else {
+    deactivatePointOnMatrix(foodPosX, foodPosY);
+  }
+}
+
+bool endCondition() {
+  if (snakeX == -1 || snakeX == MATRIX_SIZE || snakeY == -1 || snakeY == MATRIX_SIZE)
+    return true;
+  for (byte i = 1; i < snakeLength; i++) 
+    if (snake[i].x == snakeX && snake[i].y == snakeY)
+      return true;
+  return false;
 }
 
 
@@ -120,31 +144,28 @@ void updateHighscore() {
   }
 }
 
-void gameEnded() {
-  turnOffMatrix();
-  updateHighscore();
-}
-
 void gameLoop(bool &updateLCD) {
 
   if (millis() - lastMoved > moveInterval) {
     moveSnake();
   }
 
-  if (matrixChanged == true) {
-    updateMatrix();
-    matrixChanged = false;
-  }
+  blinkFood();
 
   getSnakeDirection();
 
   if (snakeX == foodPosX && snakeY == foodPosY) {
+    matrix[foodPosX][foodPosY] = 1;
+    matrixChanged = true;
     generateFood();
     snakeLength++;
-    if (snakeLength % 3 == 0) {
-      moveInterval -= 20;
-    }
+    moveInterval -= 8;
     updateLCD = true;
+  }
+
+  if (matrixChanged == true) {
+    updateMatrix(foodPosX, foodPosY);
+    matrixChanged = false;
   }
   
 }

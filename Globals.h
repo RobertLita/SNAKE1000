@@ -10,6 +10,7 @@
 // TIMERS //
 #define WELCOME_TIME 1000
 #define HAVEFUN_TIME 2000
+#define FOOD_BLINK 400
 
 // DIRECTIONS //
 #define UP 1

@@ -29,10 +29,11 @@ void setMatrixBrightness(byte value) {
 }
 
 
-void updateMatrix() {
+void updateMatrix(byte foodX, byte foodY) {
   for (int i = 0; i < MATRIX_SIZE; i++) {
     for (int j = 0; j < MATRIX_SIZE; j++) {
-      lc.setLed(0, i, j, matrix[i][j]);
+      if (i != foodX || j != foodY)
+        lc.setLed(0, i, j, matrix[i][j]);
     }
   }
 }
@@ -44,9 +45,25 @@ void displayIconOnMatrix(const byte icon[]) {
 }
 
 
-void turnOffMatrix() {
+void clearMatrix() {
   lc.clearDisplay(0);
 }
 
+
+void activatePointOnMatrix(byte x, byte y) {
+  lc.setLed(0, x, y, true);
+}
+
+void deactivatePointOnMatrix(byte x, byte y) {
+  lc.setLed(0, x, y, false);
+}
+
+void clearMatrixLeds() {
+  for (int i = 0; i < MATRIX_SIZE; i++) {
+    for (int j = 0; j < MATRIX_SIZE; j++) {
+      matrix[i][j] = 0;
+    }
+  }
+}
 
 #endif Matrix

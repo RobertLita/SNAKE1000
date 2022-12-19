@@ -166,7 +166,7 @@ void displayMenuIcon(const byte icon[]) {
 
 void eraseMatrix() {
   if (matrixOn) {
-    turnOffMatrix();
+    clearMatrix();
     matrixOn = false;
   }
 }
@@ -467,10 +467,11 @@ void menuLoop() {
     if (shouldRefresh) {
       updateInGameScreen();
     }
-    if (buttonState == BUTTON_PRESSED) {
-      gameEnded();
+    if (buttonState == BUTTON_PRESSED || endCondition()) {
+      clearMatrix();
+      updateHighscore();
       buildHighscores();
-      saveHighscoresInStorage();
+      // saveHighscoresInStorage();
       currentMenuState = 8;
     }
   }
