@@ -5,42 +5,59 @@
 #include "StorageManager.h"
 #include "Matrix.h"
 
-const short moveInterval = 500;
+
+struct position {
+  byte x, y;
+};
+
+position snake[MATRIX_SIZE * MATRIX_SIZE];
+
+short moveInterval = 500;
 unsigned long long lastMoved = 0;
 
 bool sJoyMoved = false;
-byte xPos = 0;
-byte yPos = 0;
-byte xLastPos = 0;
-byte yLastPos = 0;
+byte snakeX, snakeY = 0;
 
-byte foodPosX;
-byte foodPosY;
+byte foodPosX, foodPosY;
 
-short foodEated, snakeXDirection, snakeYDirection;
+short snakeXDirection, snakeYDirection, snakeLength;
 
 void updateMatrix();
+void generateFood();
 
 void gameSetup() {
-  xPos = 0;
-  yPos = 0;
-  matrix[xPos][yPos] = 1;
-  foodPosX = rand() % 8;
-  foodPosY = rand() % 8;
-  matrix[foodPosX][foodPosY] = 1;
-  foodEated = 0;
+  snakeX = 0;
+  snakeY = 2;  
+  snakeLength = 3;
+  snake[0] = {0, 2};
+  snake[1] = {0, 1};
+  snake[2] = {0, 0};
+  for (byte i = 0; i < snakeLength; i++)
+    matrix[snake[i].x][snake[i].y] = 1; 
+
+  generateFood();
   updateMatrix();
+  matrixChanged = false;
+
   lastMoved = 0;
-  snakeXDirection = RIGHT;
-  snakeYDirection = STILL;
-  snakeXDirection = RIGHT;
-  snakeYDirection = STILL;
+  snakeXDirection = STILL;
+  snakeYDirection = RIGHT;
 }
 
 
 void generateFood() {
-  foodPosX = rand() % 8;
-  foodPosY = rand() % 8;
+  bool invalidPosition = true;
+  while (invalidPosition) {
+    foodPosX = rand() % 8;
+    foodPosY = rand() % 8;
+    for (byte i = 0; i < snakeLength; i++) 
+      if (snake[i].x == foodPosX && snake[i].y == foodPosY) {
+        invalidPosition = true;
+        break;
+      }
+    else invalidPosition = false;
+  }
+  
   matrix[foodPosX][foodPosY] = 1;
   matrixChanged = true;
 }
@@ -76,35 +93,35 @@ void getSnakeDirection() {
 }
 
 void moveSnake() {
-  xLastPos = xPos;
-  yLastPos = yPos;
-  xPos += snakeXDirection;
-  yPos += snakeYDirection;
-  matrix[xLastPos][yLastPos] = 0;
-  matrix[xPos][yPos] = 1;
+
+  snakeX += snakeXDirection;
+  snakeY += snakeYDirection;
+
+  matrix[snake[snakeLength - 1].x][snake[snakeLength - 1].y] = 0;
+  for (byte i = snakeLength - 1; i >= 1; i--)
+      snake[i] = snake[i - 1]; 
+
+  snake[0] = {snakeX, snakeY};
+  matrix[snakeX][snakeY] = 1;
   matrixChanged = true;
   lastMoved = millis();
 }
 
 void updateHighscore() {
   for (byte i = 0 ; i < 5; i++)
-    if (foodEated > highscores[i].score) {
+    if (snakeLength - 3 > highscores[i].score) {
       for (byte j = 4; j > i; j--) {
         highscores[j].score = highscores[j - 1].score;
         strcpy(highscores[j].name, highscores[j - 1].name);
       }
-    highscores[i].score = foodEated;
+    highscores[i].score = snakeLength - 3;
     strcpy(highscores[i].name, settings.name);
     break;
   }
 }
 
 void gameEnded() {
-  for (int i = 0; i < MATRIX_SIZE; i++) {
-    for (int j = 0; j < MATRIX_SIZE; j++) {
-      matrix[i][j] = 0;
-    }
-  }
+  turnOffMatrix();
   updateHighscore();
 }
 
@@ -121,16 +138,19 @@ void gameLoop(bool &updateLCD) {
 
   getSnakeDirection();
 
-  if (xPos == foodPosX && yPos == foodPosY) {
+  if (snakeX == foodPosX && snakeY == foodPosY) {
     generateFood();
-    foodEated++;
+    snakeLength++;
+    if (snakeLength % 3 == 0) {
+      moveInterval -= 20;
+    }
     updateLCD = true;
   }
   
 }
 
 short getPoints() {
-  return foodEated;
+  return snakeLength - 3;
 }
 
 #endif Game
