@@ -10,6 +10,7 @@ struct params {
   byte deltaSpeed;
   byte scorePerPoint;
   bool hasWalls;
+  bool reversedSnake;
   bool reversedControls; 
 };
 
@@ -19,9 +20,10 @@ struct position {
 
 position snake[MATRIX_SIZE * MATRIX_SIZE];
 position walls[9];
-const params config[] = { { 8, 1, false, false },
-                          { 11, 2, true, false },
-                          { 9, 3, true, true },
+const params config[] = { { 8, 2, false, false, false },
+                          { 5, 3, true, true, false },
+                          { 11, 3, true, false, false },
+                          { 9, 4, true, true, true },
                         };
 
 unsigned long long lastMoved, foodBlinkTimestamp;
@@ -82,7 +84,20 @@ void generateFood() {
           break;
         }
   }
+}
 
+
+void twistSnake() {
+  for (byte i = 0, j = snakeLength - 1; i < j; i++, j--) {
+    position aux = snake[i];
+    snake[i] = snake[j];
+    snake[j] = aux;
+  }
+  snakeX = snake[0].x;
+  snakeY = snake[0].y;
+
+  snakeXDirection = -snakeXDirection;
+  snakeYDirection = -snakeYDirection;
 }
 
 void generateWalls() {
@@ -114,6 +129,7 @@ void generateWalls() {
     previousColumn = startingPointY;
   }
 }
+
 
 void blinkFood () {
   unsigned long timePassed = millis() - foodBlinkTimestamp;
@@ -181,12 +197,8 @@ void getSnakeDirection() {
 }
 
 void moveSnake() {
-
   snakeX += snakeXDirection;
   snakeY += snakeYDirection;
-  Serial.print(snake[snakeLength - 1].x);
-  Serial.print(snake[snakeLength - 1].y);
-  Serial.print('\n');
 
   matrix[snake[snakeLength - 1].x][snake[snakeLength - 1].y] = 0;
   for (byte i = snakeLength - 1; i >= 1; i--)
@@ -225,6 +237,9 @@ void gameLoop(bool &updateLCD) {
     matrix[foodPosX][foodPosY] = 1;
     matrixChanged = true;
     generateFood();
+    if (poisonedFood()) {
+      twistSnake();
+    }
     snakeLength++;
     moveInterval -= config[settings.difficulty - 1].deltaSpeed;
     updateLCD = true;
@@ -234,7 +249,6 @@ void gameLoop(bool &updateLCD) {
     updateMatrix(foodPosX, foodPosY);
     matrixChanged = false;
   }
-  
 }
 
 short getPoints() {
