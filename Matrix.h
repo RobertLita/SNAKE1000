@@ -30,8 +30,8 @@ void setMatrixBrightness(byte value) {
 
 
 void updateMatrix(byte foodX, byte foodY) {
-  for (int i = 0; i < MATRIX_SIZE; i++) {
-    for (int j = 0; j < MATRIX_SIZE; j++) {
+  for (byte i = 0; i < MATRIX_SIZE; i++) {
+    for (byte j = 0; j < MATRIX_SIZE; j++) {
       if (i != foodX || j != foodY)
         lc.setLed(0, i, j, matrix[i][j]);
     }

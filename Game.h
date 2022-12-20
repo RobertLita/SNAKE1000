@@ -12,7 +12,7 @@ struct params {
   byte scorePerPoint;
   bool hasWalls;
   bool poisonedFood;
-  bool reversedControls; 
+  bool reversedControls;
 };
 
 struct position {
@@ -20,44 +20,54 @@ struct position {
 };
 
 position snake[MATRIX_SIZE * MATRIX_SIZE];
-position walls[9];
-const params config[] = { { 8, 2, false, false, false },
-                          { 7, 3, false, true, false },
-                          { 11, 3, true, false, false },
-                          { 9, 5, true, true, true },
-                        };
+position walls[9], wallsCopy[9];
+
+const params config[] = {
+  { 8, 2, false, false, false },
+  { 7, 3, false, true, false },
+  { 11, 3, true, false, false },
+  { 9, 5, true, true, true },
+};
 
 unsigned long long lastMoved, foodBlinkTimestamp;
 
 bool sJoyMoved = false, foodDot, poisoned;
-short snakeX, snakeY ;
+short snakeX, snakeY;
 
 byte foodPosX, foodPosY;
 
-short snakeXDirection, snakeYDirection, snakeLength, moveInterval;;
+short snakeXDirection, snakeYDirection, snakeLength, moveInterval;
+
 
 void updateMatrix(byte foodX, byte foodY);
 void generateFood();
 void generateWalls();
+void printWalls();
+short getPoints();
 
 void gameSetup() {
   pinMode(ledPin, OUTPUT);
   randomSeed(analogRead(0));
   clearMatrixLeds();
   for (byte i = 0; i < MATRIX_SIZE * MATRIX_SIZE; i++)
-    snake[i] = {9, 9};
+    snake[i] = { 9, 9 };
 
   if (config[settings.difficulty - 1].hasWalls)
     generateWalls();
+
+  for (byte i = 0; i < 9; i++) {
+    wallsCopy[i] = walls[i];
+  }
+
   moveInterval = 450;
   snakeX = 0;
-  snakeY = 2;  
+  snakeY = 2;
   snakeLength = 3;
-  snake[0] = {0, 2};
-  snake[1] = {0, 1};
-  snake[2] = {0, 0};
+  snake[0] = { 0, 2 };
+  snake[1] = { 0, 1 };
+  snake[2] = { 0, 0 };
   for (byte i = 0; i < snakeLength; i++)
-    matrix[snake[i].x][snake[i].y] = 1; 
+    matrix[snake[i].x][snake[i].y] = 1;
 
   generateFood();
   updateMatrix(foodPosX, foodPosY);
@@ -76,14 +86,14 @@ void generateFood() {
     invalidPosition = false;
     foodPosX = random(8);
     foodPosY = random(8);
-    for (byte i = 0; i < snakeLength; i++) 
+    for (byte i = 0; i < snakeLength; i++)
       if (snake[i].x == foodPosX && snake[i].y == foodPosY) {
         invalidPosition = true;
         break;
       }
     if (!invalidPosition && config[settings.difficulty - 1].hasWalls)
       for (byte i = 0; i < 9; i++)
-        if (walls[i].x == foodPosX && walls[i].y == foodPosY) {
+        if (wallsCopy[i].x == foodPosX && wallsCopy[i].y == foodPosY) {
           invalidPosition = true;
           break;
         }
@@ -93,12 +103,14 @@ void generateFood() {
     if (chance <= 40) {
       digitalWrite(ledPin, HIGH);
       poisoned = true;
-    }
-    else {
+    } else {
       digitalWrite(ledPin, LOW);
       poisoned = false;
     }
-  }
+  } else
+    poisoned = false;
+
+  printWalls();
 }
 
 
@@ -115,18 +127,15 @@ void twistSnake() {
     if (snake[0].y < snake[1].y) {
       snakeXDirection = STILL;
       snakeYDirection = LEFT;
-    }
-    else {
+    } else {
       snakeXDirection = STILL;
       snakeYDirection = RIGHT;
     }
-  } 
-  else {
+  } else {
     if (snake[0].x < snake[1].x) {
       snakeXDirection = DOWN;
       snakeYDirection = STILL;
-    }
-    else {
+    } else {
       snakeXDirection = UP;
       snakeYDirection = STILL;
     }
@@ -139,29 +148,34 @@ void generateWalls() {
   for (byte i = 0; i < 3; i++) {
     byte wallDirection = random(2);
     generatedWrong = true;
-    while(generatedWrong) {
+    while (generatedWrong) {
       startingPointX = random(1, 5);
       startingPointY = random(1, 5);
-      if (abs(int(startingPointX - previousRow)) > 1 && abs(int(startingPointY - previousColumn)) > 1) 
+      if (abs(int(startingPointX - previousRow)) > 1 && abs(int(startingPointY - previousColumn)) > 1)
         generatedWrong = false;
     }
-    
+
     for (byte j = 0; j < 3; j++)
       if (wallDirection == 0) {
         matrix[startingPointX][startingPointY + j] = 1;
-        walls[i * 3 + j] = {startingPointX, startingPointY + j};
-      }
-      else {
+        walls[i * 3 + j] = { startingPointX, startingPointY + j };
+      } else {
         matrix[startingPointX + j][startingPointY] = 1;
-        walls[i * 3 + j] = {startingPointX + j, startingPointY};
+        walls[i * 3 + j] = { startingPointX + j, startingPointY };
       }
     previousRow = startingPointX;
     previousColumn = startingPointY;
   }
+  for (byte i = 0; i < 9; i++) {
+    Serial.print(walls[i].x);
+    Serial.print(walls[i].y);
+    Serial.print('\n');
+  }
+  Serial.println("-----");
 }
 
 
-void blinkFood () {
+void blinkFood() {
   unsigned long timePassed = millis() - foodBlinkTimestamp;
   if (timePassed > FOOD_BLINK) {
     foodDot = !foodDot;
@@ -176,22 +190,33 @@ void blinkFood () {
 }
 
 bool endCondition() {
-  if (snakeX == -1 || snakeX == MATRIX_SIZE || snakeY == -1 || snakeY == MATRIX_SIZE)
+  // if (walls[2].x == 0) 
+  //   Serial.println("zero");
+  if (snakeX == -1 || snakeX == MATRIX_SIZE || snakeY == -1 || snakeY == MATRIX_SIZE) {
+    Serial.println("afara");
     return true;
-  for (byte i = 1; i < snakeLength; i++) 
-    if (snake[i].x == snakeX && snake[i].y == snakeY)
+  }
+  for (byte i = 1; i < snakeLength; i++)
+    if (snake[i].x == snakeX && snake[i].y == snakeY) {
+      Serial.println("sarpe");
       return true;
-  if (config[settings.difficulty - 1].hasWalls)
-    for (byte i = 0; i < 9; i++) 
-      if (walls[i].x == snakeX && walls[i].y == snakeY)
+    }
+
+  if (config[settings.difficulty - 1].hasWalls) {
+    for (byte i = 0; i < 9; i++) {
+      if (walls[i].x == snakeX && walls[i].y == snakeY) {
+        printWalls();
         return true;
+      }
+    }
+  }
   return false;
 }
 
 
 void getSnakeDirection() {
-  int xValue = analogRead(pinY);
-  int yValue = analogRead(pinX);
+  short xValue = analogRead(pinY);
+  short yValue = analogRead(pinX);
   bool reversed = config[settings.difficulty - 1].reversedControls;
   if (stillMinThreshold <= xValue && xValue <= stillMaxThreshold && stillMinThreshold <= yValue && yValue <= stillMaxThreshold) {
     sJoyMoved = false;
@@ -226,31 +251,44 @@ void getSnakeDirection() {
   }
 }
 
+void printWalls() {
+  for (byte i = 0; i < 9; i++) {
+    Serial.print(walls[i].x);
+    Serial.print(walls[i].y);
+    Serial.print('\n');
+  }
+  Serial.println("----");
+}
+
 void moveSnake() {
   snakeX += snakeXDirection;
   snakeY += snakeYDirection;
 
   matrix[snake[snakeLength - 1].x][snake[snakeLength - 1].y] = 0;
   for (byte i = snakeLength - 1; i >= 1; i--)
-      snake[i] = snake[i - 1]; 
+    snake[i] = snake[i - 1];
 
-  snake[0] = {snakeX, snakeY};
+  snake[0] = { snakeX, snakeY };
   matrix[snakeX][snakeY] = 1;
   matrixChanged = true;
   lastMoved = millis();
 }
 
-void updateHighscore() {
-  for (byte i = 0 ; i < 5; i++)
-    if (snakeLength - 3 > highscores[i].score) {
+byte updateHighscore() {
+  short scoreMade = getPoints();
+  byte top = 0;
+  for (byte i = 0; i < 5; i++)
+    if (scoreMade > highscores[i].score) {
+      top = i + 1;
       for (byte j = 4; j > i; j--) {
         highscores[j].score = highscores[j - 1].score;
         strcpy(highscores[j].name, highscores[j - 1].name);
       }
-    highscores[i].score = snakeLength - 3;
-    strcpy(highscores[i].name, settings.name);
-    break;
-  }
+      highscores[i].score = scoreMade;
+      strcpy(highscores[i].name, settings.name);
+      break;
+    }
+  return top;
 }
 
 void gameLoop(bool &updateLCD) {
@@ -267,6 +305,7 @@ void gameLoop(bool &updateLCD) {
     if (poisoned) {
       twistSnake();
     }
+    printWalls();
     eatingSound();
     matrix[foodPosX][foodPosY] = 1;
     matrixChanged = true;

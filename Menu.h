@@ -15,17 +15,16 @@ unsigned long lastDebounceTime;
 byte lastReading = HIGH;
 byte buttonState = LOW;
 
-String menuItems[] = { "SNAKE1000", "Start Game", "Highscores", "Settings", "About", "How to play" };
-String settingsItems[] = { "SETTINGS", "Your name", "Difficulty", "Contrast", "Brightness", "Matrix Light", "Sounds", "Reset HScores", "Back to Menu" };
-String aboutItems[] = { "ABOUT", "SNAKE1000", "Author:", "Lita Robert", "Github user:", "RobertLita", "Back to Menu" };
-String htpItems[] = { "HOW TO PLAY", "1. Eat food", "2. Be fast", "3. Have fun", "Back to Menu" };
+const char* menuItems[] = { "SNAKE1000", "Start Game", "Highscores", "Settings", "About", "How to play" };
+const char* settingsItems[] = { "SETTINGS", "Your name", "Difficulty", "Contrast", "Brightness", "Matrix Light", "Sounds", "Reset HScores", "Back to Menu" };
+const char* aboutItems[] = { "ABOUT", "SNAKE1000", "Author:", "Lita Robert", "Github user:", "RobertLita", "Back to Menu" };
+const char* htpItems[] = { "HOW TO PLAY", "1. Eat food", "2. Be fast", "3. Have fun", "Back to Menu" };
 String hsItems[] = { "HIGHSCORES", "1.", "2.", "3.", "4.", "5.", "Back to Menu" };
 
 byte currentMenuState = 1;
 byte selectedSettingsItem = 1;
 byte selectedHighscoresItem = 1;
 byte selectedMenuItem = 1;
-byte selectedHighscoreItem = 2;
 byte selectedHTPItem = 1;
 byte selectedAboutItem = 1;
 
@@ -60,6 +59,7 @@ void menuSetup() {
   setMatrixBrightness(settings.matrixBrightness);
 
   buildHighscores();
+  
 }
 
 void printCentered(String message, byte row) {
@@ -119,7 +119,7 @@ void getButtonState() {
 }
 
 
-void displayItems(byte& index, byte listLen, String itemList[], byte step = 1, bool clickable = false) {
+void displayItems(byte& index, byte listLen, char* itemList[], byte step = 1, bool clickable = false) {
   if (shouldRefresh) {
     lcd.clear();
     lcd.setCursor(0, 0);
@@ -158,6 +158,45 @@ void displayItems(byte& index, byte listLen, String itemList[], byte step = 1, b
   }
 }
 
+void displayHighscore(byte& index, byte listLen) {
+  if (shouldRefresh) {
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print(hsItems[index - 1]);
+    if (index != 1) {
+      lcd.setCursor(15, 0);
+      lcd.write(byte(1));
+    }
+    if (index != listLen - 1) {
+      lcd.setCursor(15, 1);
+      lcd.write(byte(2));
+    }
+    lcd.setCursor(0, 1);
+    if (hsItems[index] == "Back to Menu")
+      lcd.write(byte(0));
+    lcd.print(hsItems[index]);
+    shouldRefresh = false;
+  }
+
+  getjoyState();
+
+  if (joyMoved) {
+    if (yJoyState == UP && index < listLen - 1) {
+      index += 1;
+      shouldRefresh = true;
+    } else if (yJoyState == UP && listLen % 2 == 1 && index == listLen - 2) {
+      index++;
+      shouldRefresh = true;
+    } else if (yJoyState == DOWN && listLen % 2 == 1 && index == listLen - 1) {
+      index--;
+      shouldRefresh = true;
+    } else if (yJoyState == DOWN && index > 1) {
+      index -= 1;
+      shouldRefresh = true;
+    }
+  }
+}
+
 void displayMenuIcon(const byte icon[]) {
   if (!matrixOn) {
     displayIconOnMatrix(icon);
@@ -191,7 +230,7 @@ void checkButtonPressing(byte& currentState, byte nextState) {
 void displaySounds() {
   short letterIndex = 0;
   String onOff;
-  String sounds = "SOUNDS ";
+  char sounds[7] = "SOUNDS ";
 
   if (settings.soundsMuted == false)
     onOff = " <ON>";
@@ -236,7 +275,7 @@ void buildHighscores() {
     String score = "";
     for (byte j = 1; j <= 7 - digitNr; j++)
       score += ' ';
-    char numstr[5];  // enough to hold all numbers up to 64-bits
+    char numstr[5];  
     sprintf(numstr, "%d", highscores[i - 1].score);
     score += numstr;
     String id(char(i + 48));
@@ -259,9 +298,16 @@ void resetHighscores() {
 
 void updateInGameScreen() {
   lcd.clear();
-  printCentered("Playing...", 0);
-  char numstr[5];  // enough to hold all numbers up to 64-bits
-  char message[17] = "Score:  ";
+  char message[17] = "Player: ";
+  strcat(message, settings.name);
+  printCentered(message, 0);
+  char numstr[5];  
+  char currentDiff[2];
+  currentDiff[1] = '\0';
+  currentDiff[0] = char(settings.difficulty + '0');
+  strcpy(message, "Lvl:");
+  strcat(message, currentDiff);
+  strcat(message, " Score:");
   short food = getPoints();
   sprintf(numstr, "%d", food);
   strcat(message, numstr);
@@ -398,7 +444,8 @@ void menuLoop() {
 
       case HIGHSCORES:
         displayMenuIcon(highscoreIcon);
-        displayItems(selectedHighscoresItem, 7, hsItems);
+        displayHighscore(selectedHighscoresItem, 7);
+        // displayItems(selectedHighscoresItem, 7, hsItems);
         if (selectedHighscoresItem == 6)
           checkButtonPressing(currentMenuState, 8);
         break;
@@ -473,11 +520,31 @@ void menuLoop() {
     }
     if (buttonState == BUTTON_PRESSED || endCondition()) {
       digitalWrite(ledPin, LOW);
-      losingSound();
       clearMatrix();
-      updateHighscore();
+      byte top = updateHighscore();
+      String message;
+      if (top != 0) {
+        winningSound();
+        char message[17];  
+        char topPosition[2];
+        topPosition[1] = '\0';
+        topPosition[0] = char(top + '0');
+        strcpy(message, "You are on top ");
+        strcat(message, topPosition);
+        lcd.clear();
+        lcd.setCursor(0,0);
+        lcd.print(message);
+        printCentered("Congratz!", 1);
+      }
+      else {
+        losingSound();
+        lcd.clear();
+        printCentered("Not very good :(", 0);
+        printCentered("Try again!", 1);
+      }
+      delay(4000);
       buildHighscores();
-      // saveHighscoresInStorage();
+      saveHighscoresInStorage();
       currentMenuState = 8;
     }
   }

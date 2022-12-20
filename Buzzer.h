@@ -30,4 +30,10 @@ void losingSound() {
   }
 }
 
+void winningSound() {
+  if (!settings.soundsMuted) {
+    tone(buzzerPin, 1700, LOSING_SOUND_DURATION);
+  }
+}
+
 #endif Buzzer
