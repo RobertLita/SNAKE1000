@@ -8,6 +8,7 @@
 #include "Globals.h"
 #include "Matrix.h"
 #include "Game.h"
+#include "Buzzer.h"
 
 unsigned long lastDebounceTime;
 
@@ -181,6 +182,7 @@ void goToState(byte& currentState, byte nextState) {
 void checkButtonPressing(byte& currentState, byte nextState) {
   getButtonState();
   if (buttonState == BUTTON_PRESSED) {
+    menuBeep();
     goToState(currentState, nextState);
   }
 }
@@ -286,6 +288,7 @@ void displaySlider(byte barsNr, byte& settingToUpdate, short modifierPin = 0, by
   while (buttonState != BUTTON_PRESSED) {
     getjoyState();
     if (xJoyState != STILL) {
+      menuBeep();
       if (xJoyState == RIGHT && barIndex < barsNr) {
         barIndex++;
         content[barIndex] = 0xff;
@@ -331,6 +334,7 @@ void displaySetName() {
       lcd.setCursor(5 + letterIndex, 0);
     }
     if (yJoyState != STILL) {
+      menuBeep();
       name[letterIndex] -= yJoyState;
       switch (name[letterIndex]) {
         case (' ' - 1):
@@ -426,7 +430,7 @@ void menuLoop() {
         break;
 
       case DIFFICULTY:
-        displaySlider(3, settings.difficulty);
+        displaySlider(4, settings.difficulty);
         break;
 
       case CONTRAST:
@@ -468,6 +472,8 @@ void menuLoop() {
       updateInGameScreen();
     }
     if (buttonState == BUTTON_PRESSED || endCondition()) {
+      digitalWrite(ledPin, LOW);
+      losingSound();
       clearMatrix();
       updateHighscore();
       buildHighscores();

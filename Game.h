@@ -5,12 +5,13 @@
 #include "Globals.h"
 #include "StorageManager.h"
 #include "Matrix.h"
+#include "Buzzer.h"
 
 struct params {
   byte deltaSpeed;
   byte scorePerPoint;
   bool hasWalls;
-  bool reversedSnake;
+  bool poisonedFood;
   bool reversedControls; 
 };
 
@@ -21,14 +22,14 @@ struct position {
 position snake[MATRIX_SIZE * MATRIX_SIZE];
 position walls[9];
 const params config[] = { { 8, 2, false, false, false },
-                          { 5, 3, true, true, false },
+                          { 7, 3, false, true, false },
                           { 11, 3, true, false, false },
-                          { 9, 4, true, true, true },
+                          { 9, 5, true, true, true },
                         };
 
 unsigned long long lastMoved, foodBlinkTimestamp;
 
-bool sJoyMoved = false, foodDot;
+bool sJoyMoved = false, foodDot, poisoned;
 short snakeX, snakeY ;
 
 byte foodPosX, foodPosY;
@@ -40,8 +41,11 @@ void generateFood();
 void generateWalls();
 
 void gameSetup() {
+  pinMode(ledPin, OUTPUT);
   randomSeed(analogRead(0));
   clearMatrixLeds();
+  for (byte i = 0; i < MATRIX_SIZE * MATRIX_SIZE; i++)
+    snake[i] = {9, 9};
 
   if (config[settings.difficulty - 1].hasWalls)
     generateWalls();
@@ -84,6 +88,17 @@ void generateFood() {
           break;
         }
   }
+  if (config[settings.difficulty - 1].poisonedFood) {
+    byte chance = random(101);
+    if (chance <= 40) {
+      digitalWrite(ledPin, HIGH);
+      poisoned = true;
+    }
+    else {
+      digitalWrite(ledPin, LOW);
+      poisoned = false;
+    }
+  }
 }
 
 
@@ -96,8 +111,26 @@ void twistSnake() {
   snakeX = snake[0].x;
   snakeY = snake[0].y;
 
-  snakeXDirection = -snakeXDirection;
-  snakeYDirection = -snakeYDirection;
+  if (snake[0].x == snake[1].x) {
+    if (snake[0].y < snake[1].y) {
+      snakeXDirection = STILL;
+      snakeYDirection = LEFT;
+    }
+    else {
+      snakeXDirection = STILL;
+      snakeYDirection = RIGHT;
+    }
+  } 
+  else {
+    if (snake[0].x < snake[1].x) {
+      snakeXDirection = DOWN;
+      snakeYDirection = STILL;
+    }
+    else {
+      snakeXDirection = UP;
+      snakeYDirection = STILL;
+    }
+  }
 }
 
 void generateWalls() {
@@ -109,9 +142,6 @@ void generateWalls() {
     while(generatedWrong) {
       startingPointX = random(1, 5);
       startingPointY = random(1, 5);
-      Serial.print(startingPointX);
-      Serial.print(startingPointY);
-      Serial.print('\n');
       if (abs(int(startingPointX - previousRow)) > 1 && abs(int(startingPointY - previousColumn)) > 1) 
         generatedWrong = false;
     }
@@ -234,12 +264,13 @@ void gameLoop(bool &updateLCD) {
   getSnakeDirection();
 
   if (snakeX == foodPosX && snakeY == foodPosY) {
+    if (poisoned) {
+      twistSnake();
+    }
+    eatingSound();
     matrix[foodPosX][foodPosY] = 1;
     matrixChanged = true;
     generateFood();
-    if (poisonedFood()) {
-      twistSnake();
-    }
     snakeLength++;
     moveInterval -= config[settings.difficulty - 1].deltaSpeed;
     updateLCD = true;

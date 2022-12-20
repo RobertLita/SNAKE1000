@@ -48,19 +48,21 @@ const short stillMinThreshold = 400;
 const short stillMaxThreshold = 600;
 
 // PINS //
-const int lcdBrightnessPin = 3;
-const int lcdContrastPin = 11;
-const int pinSW = 2;
+const int lcdBrightnessPin = 6;
+const int lcdContrastPin = 5;
+const int pinSW = 1;
 const int pinX = A0;
 const int pinY = A1;
+const int ledPin = A5;
+const int buzzerPin = 3;
 const byte RS = 9;
 const byte enable = 8;
 const byte d4 = 7;
-const byte d5 = 6;
-const byte d6 = 5;
+const byte d5 = 2;
+const byte d6 = 13;
 const byte d7 = 4;
 const byte dinPin = 12;
-const byte clockPin = 13;
+const byte clockPin = 11;
 const byte loadPin = 10;
 
 
@@ -68,5 +70,14 @@ const byte loadPin = 10;
 #define MATRIX_SIZE 8
 #define MIN_MATRIX_BRIGHTNESS_VALUE 0
 #define MAX_MATRIX_BRIGHTNESS_VALUE 15
+
+// SOUNDS
+
+#define MENU_SOUND_TONE 262
+#define MENU_SOUND_DURATION 200
+#define LOSING_SOUND_TONE 200
+#define LOSING_SOUND_DURATION 1000
+#define EATING_SOUND_TONE 2093
+#define EATING_SOUND_DURATION 100
 
 #endif Globals
