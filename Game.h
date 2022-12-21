@@ -42,7 +42,6 @@ short snakeXDirection, snakeYDirection, snakeLength, moveInterval;
 void updateMatrix(byte foodX, byte foodY);
 void generateFood();
 void generateWalls();
-void printWalls();
 short getPoints();
 
 void gameSetup() {
@@ -169,12 +168,6 @@ void generateWalls() {
     previousRow = startingPointX;
     previousColumn = startingPointY;
   }
-  for (byte i = 0; i < 9; i++) {
-    Serial.print(walls[i].x);
-    Serial.print(walls[i].y);
-    Serial.print('\n');
-  }
-  Serial.println("-----");
 }
 
 
@@ -193,22 +186,17 @@ void blinkFood() {
 }
 
 bool endCondition() {
-  // if (walls[2].x == 0) 
-  //   Serial.println("zero");
   if (snakeX == -1 || snakeX == MATRIX_SIZE || snakeY == -1 || snakeY == MATRIX_SIZE) {
-    Serial.println("afara");
     return true;
   }
   for (byte i = 1; i < snakeLength; i++)
     if (snake[i].x == snakeX && snake[i].y == snakeY) {
-      Serial.println("sarpe");
       return true;
     }
 
   if (config[settings.difficulty - 1].hasWalls) {
     for (byte i = 0; i < 9; i++) {
       if (walls[i].x == snakeX && walls[i].y == snakeY) {
-        printWalls();
         return true;
       }
     }
@@ -254,14 +242,6 @@ void getSnakeDirection() {
   }
 }
 
-void printWalls() {
-  for (byte i = 0; i < 9; i++) {
-    Serial.print(walls[i].x);
-    Serial.print(walls[i].y);
-    Serial.print('\n');
-  }
-  Serial.println("----");
-}
 
 void moveSnake() {
   snakeX += snakeXDirection;
@@ -311,7 +291,6 @@ void gameLoop(bool &updateLCD) {
     walls[0] = t[0];
     walls[1] = t[1];
     walls[2] = t[2];
-    printWalls();
     eatingSound();
     matrix[foodPosX][foodPosY] = 1;
     matrixChanged = true;
