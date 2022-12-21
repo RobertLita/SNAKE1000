@@ -1,4 +1,4 @@
-# SNAKE100
+# SNAKE1000
 ## Backstory 
 I wanted to have fun building a game and due to the restrictions of a 8x8 matrix, I tought snake would be a great choice. The problem with snake is that it's becoming boring pretty fast, so I managed to do some "twists" to it, which increase the enjoyment of the game. 🐍         
 *(Also, I was obsessed with snake when I played it for the first time on my father's nokia).* 
