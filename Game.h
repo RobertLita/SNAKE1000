@@ -20,7 +20,7 @@ struct position {
 };
 
 position snake[MATRIX_SIZE * MATRIX_SIZE];
-position walls[9], wallsCopy[9];
+position walls[9], t[3];
 
 const params config[] = {
   { 8, 2, false, false, false },
@@ -55,9 +55,9 @@ void gameSetup() {
   if (config[settings.difficulty - 1].hasWalls)
     generateWalls();
 
-  for (byte i = 0; i < 9; i++) {
-    wallsCopy[i] = walls[i];
-  }
+  t[0] = walls[0];
+  t[1] = walls[1];
+  t[2] = walls[2];
 
   moveInterval = 450;
   snakeX = 0;
@@ -93,7 +93,7 @@ void generateFood() {
       }
     if (!invalidPosition && config[settings.difficulty - 1].hasWalls)
       for (byte i = 0; i < 9; i++)
-        if (wallsCopy[i].x == foodPosX && wallsCopy[i].y == foodPosY) {
+        if (walls[i].x == foodPosX && walls[i].y == foodPosY) {
           invalidPosition = true;
           break;
         }
@@ -110,7 +110,10 @@ void generateFood() {
   } else
     poisoned = false;
 
-  printWalls();
+  walls[0] = t[0];
+  walls[1] = t[1];
+  walls[2] = t[2];
+  
 }
 
 
@@ -305,6 +308,9 @@ void gameLoop(bool &updateLCD) {
     if (poisoned) {
       twistSnake();
     }
+    walls[0] = t[0];
+    walls[1] = t[1];
+    walls[2] = t[2];
     printWalls();
     eatingSound();
     matrix[foodPosX][foodPosY] = 1;

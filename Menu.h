@@ -18,7 +18,7 @@ byte buttonState = LOW;
 const char* menuItems[] = { "SNAKE1000", "Start Game", "Highscores", "Settings", "About", "How to play" };
 const char* settingsItems[] = { "SETTINGS", "Your name", "Difficulty", "Contrast", "Brightness", "Matrix Light", "Sounds", "Reset HScores", "Back to Menu" };
 const char* aboutItems[] = { "ABOUT", "SNAKE1000", "Author:", "Lita Robert", "Github user:", "RobertLita", "Back to Menu" };
-const char* htpItems[] = { "HOW TO PLAY", "1. Eat food", "2. Be fast", "3. Have fun", "Back to Menu" };
+const char* htpItems[] = { "HOW TO PLAY", "1. Use joystick", "2. Eat food", "3. Have fun", "Back to Menu" };
 String hsItems[] = { "HIGHSCORES", "1.", "2.", "3.", "4.", "5.", "Back to Menu" };
 
 byte currentMenuState = 1;
@@ -230,7 +230,7 @@ void checkButtonPressing(byte& currentState, byte nextState) {
 void displaySounds() {
   short letterIndex = 0;
   String onOff;
-  char sounds[7] = "SOUNDS ";
+  char sounds[8] = "SOUNDS ";
 
   if (settings.soundsMuted == false)
     onOff = " <ON>";
@@ -305,7 +305,7 @@ void updateInGameScreen() {
   char currentDiff[2];
   currentDiff[1] = '\0';
   currentDiff[0] = char(settings.difficulty + '0');
-  strcpy(message, "Lvl:");
+  strcpy(message, "Diff:");
   strcat(message, currentDiff);
   strcat(message, " Score:");
   short food = getPoints();
@@ -514,11 +514,10 @@ void menuLoop() {
     shouldRefresh = true;
   } else if (currentMenuState == 9) {
     gameLoop(shouldRefresh);
-    getButtonState();
     if (shouldRefresh) {
       updateInGameScreen();
     }
-    if (buttonState == BUTTON_PRESSED || endCondition()) {
+    if (endCondition()) {
       digitalWrite(ledPin, LOW);
       clearMatrix();
       byte top = updateHighscore();
@@ -529,8 +528,9 @@ void menuLoop() {
         char topPosition[2];
         topPosition[1] = '\0';
         topPosition[0] = char(top + '0');
-        strcpy(message, "You are on top ");
+        strcpy(message, "You are on ");
         strcat(message, topPosition);
+        strcat(message, " :)");
         lcd.clear();
         lcd.setCursor(0,0);
         lcd.print(message);

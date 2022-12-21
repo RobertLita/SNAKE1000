@@ -1,14 +1,14 @@
 # SNAKE1000
 ## Backstory 
-I wanted to have fun building a game and due to the restrictions of a 8x8 matrix, I tought snake would be a great choice. The problem with snake is that it's becoming boring pretty fast, so I managed to do some "twists" to it, which increase the enjoyment of the game. 🐍         
+I wanted to have fun building a game and due to the restrictions of an 8x8 matrix, I tought snake would be a great choice. The problem with snake is that it's becoming boring pretty fast, so I managed to do some "twists" to it, which increase the enjoyment of the game. 🐍         
 *(Also, I was obsessed with snake when I played it for the first time on my father's nokia).* 
 
 ## Game description
 It's pretty straight forward. You are controlling a snake and need to eat the blinking food without touching the wall or eating yourself.
 
-Here comes 4 level of difficulty:
+Here comes 4 levels of difficulty:
 - <b>Difficulty 1</b> - nothing added, everything is classic.
-- <b>Difficulty 2</b> - food has a <b>45% chance</b> of being poisoned. You can see that by the on/off yellow led💡. If you eat a poisoned food, the snake is being reversed (head and tail swapped). 
+- <b>Difficulty 2</b> - food has a <b>45% chance</b> of being poisoned. You can see that by the on/off yellow led💡. If you eat poisoned food, the snake is being reversed (head and tail swapped). 
 
 *Keep an eye on the tail*😅.
 
