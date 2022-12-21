@@ -32,7 +32,9 @@ Here comes 4 levels of difficulty:
 * Buzzer
 * Resistors and wires (per logic)
 
-*You can check the project requirements <a href="https://github.com/RobertLita/SNAKE1000/blob/main/Matrix project requirements.pdf">here.</a>*
+You can check the project requirements <a href="https://github.com/RobertLita/SNAKE1000/blob/main/Matrix project requirements.pdf">here.</a>
+
+<br>
 
 ![Project Image](assets/MatrixGame.jpg)
 
@@ -43,3 +45,5 @@ Here comes 4 levels of difficulty:
     </a>
   </h3>
 </div>
+
+*[Other repo](https://github.com/RobertLita/IntroductionToRobotics) with robotics homework*.
