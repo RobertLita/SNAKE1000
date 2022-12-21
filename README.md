@@ -14,9 +14,9 @@ Here comes 4 levels of difficulty:
 
 - <b>Difficulty 3</b> - walls are dynamically generated on the map and you should avoid them.
 
-- <b>Difficulty 4</b> - food can be poisoned and your snake is dizzy 💫 (your controls are reversed: RIGHT <-> LEFT and UP <-> DOWN). 
+- <b>Difficulty 4</b> - food can be poisoned, walls as obstacles and your snake is dizzy 💫 (your controls are reversed: RIGHT <-> LEFT and UP <-> DOWN). 
 
-*You should be very focused for that.*
+*You should be very trained for that.*
 
 ## How to play 🎮
 - Make your personal settings
@@ -34,11 +34,11 @@ Here comes 4 levels of difficulty:
 
 *You can check the project requirements <a href="https://github.com/RobertLita/SNAKE1000/blob/main/Matrix project requirements.pdf">here.</a>*
 
-![Project Image](assets/)
+![Project Image](assets/MatrixGame.jpg)
 
 <div align="center">
   <h3>
-    <a href="">
+    <a href="https://youtu.be/FClM7hj5NJU">
       ▶️ Click here for video
     </a>
   </h3>
