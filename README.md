@@ -7,15 +7,16 @@ I wanted to have fun building a game and due to the restrictions of a 8x8 matrix
 It's pretty straight forward. You are controlling a snake and need to eat the blinking food without touching the wall or eating yourself.
 
 Here comes 4 level of difficulty:
-- <b>Difficulty 0</b> - nothing added, everything is classic.
-- <b>Difficulty 1</b> - food has a <b>45% chance</b> of being poisoned. You can see that by the on/off yellow led💡. If you eat a poisoned food, the snake is being reversed (head and tail swapped). 
-<br>
-*Keep an eye on the tail*😅 
+- <b>Difficulty 1</b> - nothing added, everything is classic.
+- <b>Difficulty 2</b> - food has a <b>45% chance</b> of being poisoned. You can see that by the on/off yellow led💡. If you eat a poisoned food, the snake is being reversed (head and tail swapped). 
+
+*Keep an eye on the tail*😅.
+
 - <b>Difficulty 3</b> - walls are dynamically generated on the map and you should avoid them.
 
 - <b>Difficulty 4</b> - food can be poisoned and your snake is dizzy 💫 (your controls are reversed: RIGHT <-> LEFT and UP <-> DOWN). 
-<br>
-*You should be very focused for that*
+
+*You should be very focused for that.*
 
 ## How to play 🎮
 - Make your personal settings
