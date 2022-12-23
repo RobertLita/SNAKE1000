@@ -8,7 +8,7 @@ It's pretty straight forward. You are controlling a snake and need to eat the bl
 
 Here comes 4 levels of difficulty:
 - <b>Difficulty 1</b> - nothing added, everything is classic.
-- <b>Difficulty 2</b> - food has a <b>45% chance</b> of being poisoned. You can see that by the on/off yellow led💡. If you eat poisoned food, the snake is being reversed (head and tail swapped). 
+- <b>Difficulty 2</b> - food has a <b>40% chance</b> of being poisoned. You can see that by the on/off yellow led💡. If you eat poisoned food, the snake is being reversed (head and tail swapped). 
 
 *Keep an eye on the tail*😅.
 
